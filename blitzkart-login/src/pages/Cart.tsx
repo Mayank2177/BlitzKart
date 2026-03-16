@@ -50,8 +50,8 @@ const Cart = () => {
                 key={item.name}
                 className="bg-card rounded-xl border border-border p-4 flex items-center gap-4"
               >
-                <div className="text-4xl w-16 h-16 flex items-center justify-center bg-secondary rounded-lg flex-shrink-0">
-                  {item.emoji}
+                <div className="w-16 h-16 flex items-center justify-center bg-secondary rounded-lg flex-shrink-0 overflow-hidden">
+                  <img src={item.image} alt={item.name} className="h-full w-full object-contain" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-heading font-semibold text-foreground truncate">{item.name}</h3>

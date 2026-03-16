@@ -5,7 +5,7 @@ export interface CartItem {
   price: number;
   originalPrice?: number;
   unit: string;
-  emoji: string;
+  image: string;
   quantity: number;
 }
 
