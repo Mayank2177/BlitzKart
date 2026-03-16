@@ -1,0 +1,37 @@
+package main
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func getInventory(c *gin.Context) {
+    c.IndentedJSON(http.StatusOK,inventory)
+}
+
+func postInventory(c *gin.Context) {
+    var newInventory Inventory
+
+    // Call BindJSON to bind the received JSON to
+    if err := c.BindJSON(&newInventory); err != nil {
+        return
+    }
+    // Add the new inventory to the slice.
+    inventory = append(inventory, newInventory)
+    c.IndentedJSON(http.StatusCreated, newInventory)
+}
+
+func getInventoryByID(c *gin.Context) {
+    id := c.Param("id")
+
+    // Loop over the list of albums, looking for
+    // an album whose ID value matches the parameter.
+    for _, a := range inventory {
+        if a.ID == id {
+            c.IndentedJSON(http.StatusOK, a)
+            return
+        }
+    }
+    c.IndentedJSON(http.StatusNotFound, gin.H{"message": "inventory not found"})
+}
