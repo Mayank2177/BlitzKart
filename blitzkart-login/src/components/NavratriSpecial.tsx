@@ -1,25 +1,39 @@
 import { motion } from "framer-motion";
 import ProductCard from "./ProductCard";
-import { allProducts } from "@/data/products";
 import { Link } from "react-router-dom";
 
-// Navratri-themed products: puja essentials, sweets, festive items
-const navratriKeywords = [
-  "oil", "milk", "banana", "apple", "nuts", "yogurt", "rice",
-  "atta", "juice", "chocolate", "popcorn", "biscuit",
-  "air freshener", "face mask", "body lotion", "lipstick", "nail polish",
+import pujaThali from "@/assets/products/puja-thali.png";
+import agarbatti from "@/assets/products/agarbatti.png";
+import ghee from "@/assets/products/ghee.png";
+import camphor from "@/assets/products/camphor.png";
+import coconut from "@/assets/products/coconut.png";
+import ladoo from "@/assets/products/ladoo.png";
+import kumkum from "@/assets/products/kumkum.png";
+import diyaSet from "@/assets/products/diya-set.png";
+import flowerGarland from "@/assets/products/flower-garland.png";
+import haldi from "@/assets/products/haldi.png";
+
+const navratriProducts = [
+  { name: "Puja Thali Set", price: 249, originalPrice: 399, unit: "1 set", image: pujaThali, discount: 38, category: "Navratri Special" },
+  { name: "Agarbatti Pack", price: 49, originalPrice: 79, unit: "100 sticks", image: agarbatti, discount: 38, category: "Navratri Special" },
+  { name: "Pure Desi Ghee", price: 299, originalPrice: 450, unit: "500ml", image: ghee, discount: 34, category: "Navratri Special" },
+  { name: "Camphor Tablets", price: 35, originalPrice: 55, unit: "50g", image: camphor, discount: 36, category: "Navratri Special" },
+  { name: "Puja Coconut", price: 30, originalPrice: 45, unit: "1 pc", image: coconut, discount: 33, category: "Navratri Special" },
+  { name: "Besan Ladoo Box", price: 199, originalPrice: 320, unit: "500g", image: ladoo, discount: 38, category: "Navratri Special" },
+  { name: "Kumkum & Roli Set", price: 25, originalPrice: 40, unit: "1 set", image: kumkum, discount: 38, category: "Navratri Special" },
+  { name: "Brass Diya Set", price: 149, originalPrice: 249, unit: "4 pcs", image: diyaSet, discount: 40, category: "Navratri Special" },
+  { name: "Marigold Garland", price: 45, originalPrice: 70, unit: "1 string", image: flowerGarland, discount: 36, category: "Navratri Special" },
+  { name: "Haldi Powder", price: 39, originalPrice: 60, unit: "100g", image: haldi, discount: 35, category: "Navratri Special" },
 ];
 
-const navratriProducts = allProducts.filter((p) =>
-  navratriKeywords.some((kw) => p.name.toLowerCase().includes(kw))
-).slice(0, 10).map((p) => ({
-  ...p,
-  originalPrice: p.originalPrice || Math.round(p.price / 0.6),
-  price: Math.round(p.price * 0.6),
-  discount: 40,
-}));
-
 const NavratriSpecial = () => {
+  // Check if event is still active (till March 27, 2026)
+  const eventEnd = new Date("2026-03-27T23:59:59");
+  const now = new Date();
+  const daysLeft = Math.max(0, Math.ceil((eventEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+
+  if (daysLeft <= 0) return null;
+
   return (
     <section className="py-12 relative overflow-hidden">
       {/* Festive background */}
@@ -39,7 +53,7 @@ const NavratriSpecial = () => {
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-sm font-medium font-body mb-3">
             <span>🕉️</span>
-            <span>Limited Time Festival Offers</span>
+            <span>Ends March 27 • {daysLeft} day{daysLeft !== 1 ? "s" : ""} left</span>
             <span>🕉️</span>
           </div>
           <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
@@ -60,8 +74,8 @@ const NavratriSpecial = () => {
         >
           <div className="flex items-center gap-4 px-6 py-3 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/20">
             <div className="text-center">
-              <p className="text-xl font-bold font-heading">🎊 Up to 40% OFF</p>
-              <p className="text-xs opacity-90 font-body">On festive essentials • Free delivery on ₹299+</p>
+              <p className="text-xl font-bold font-heading">🎊 Up to 40% OFF + Free Delivery</p>
+              <p className="text-xs opacity-90 font-body">On all puja essentials • Free delivery on every order till Mar 27</p>
             </div>
           </div>
         </motion.div>

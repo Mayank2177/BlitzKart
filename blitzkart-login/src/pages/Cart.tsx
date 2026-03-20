@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { getDeliveryFee, getDeliveryMessage, isNavratriActive } from "@/lib/delivery";
 import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
@@ -105,20 +106,32 @@ const Cart = () => {
           <div className="lg:col-span-1">
             <div className="bg-card rounded-xl border border-border p-6 sticky top-24 space-y-4">
               <h2 className="font-heading text-lg font-bold text-foreground">Order Summary</h2>
-              <div className="space-y-2 text-sm font-body">
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Subtotal ({totalItems} items)</span>
-                  <span>₹{totalPrice}</span>
-                </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Delivery</span>
-                  <span className="text-primary font-medium">FREE</span>
-                </div>
-                <div className="border-t border-border pt-2 flex justify-between font-heading font-bold text-foreground text-base">
-                  <span>Total</span>
-                  <span>₹{totalPrice}</span>
-                </div>
-              </div>
+              {(() => {
+                const deliveryFee = getDeliveryFee(totalPrice);
+                const deliveryMsg = getDeliveryMessage(totalPrice);
+                const grandTotal = totalPrice + deliveryFee;
+                return (
+                  <div className="space-y-2 text-sm font-body">
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Subtotal ({totalItems} items)</span>
+                      <span>₹{totalPrice}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Delivery</span>
+                      <span className={deliveryFee === 0 ? "text-primary font-medium" : ""}>
+                        {deliveryFee === 0 ? "FREE" : `₹${deliveryFee}`}
+                      </span>
+                    </div>
+                    {deliveryMsg && (
+                      <p className={`text-xs ${isNavratriActive() ? "text-orange-500 font-medium" : "text-muted-foreground"}`}>{deliveryMsg}</p>
+                    )}
+                    <div className="border-t border-border pt-2 flex justify-between font-heading font-bold text-foreground text-base">
+                      <span>Total</span>
+                      <span>₹{grandTotal}</span>
+                    </div>
+                  </div>
+                );
+              })()}
               <Link to="/checkout">
                 <Button className="w-full" size="lg">
                   Proceed to Checkout
