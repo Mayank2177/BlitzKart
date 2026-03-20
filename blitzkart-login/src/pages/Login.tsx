@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Eye, EyeOff, Zap, ShoppingCart, Package, Truck, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 type View = "login" | "signup" | "forgot";
 type Role = "user" | "admin";
@@ -17,6 +17,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [shaking, setShaking] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -52,6 +53,10 @@ const Login = () => {
         ? "Redirecting to admin dashboard..."
         : "Redirecting to BlitzKart...",
     });
+
+    setTimeout(() => {
+      navigate(role === "admin" ? "/admin" : "/");
+    }, 800);
   };
 
   return (

@@ -119,6 +119,12 @@ const Navbar = () => {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <Link to="/orders">
+            <Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-muted gap-2">
+              <Package className="h-4 w-4" />
+              <span className="hidden md:inline">Orders</span>
+            </Button>
+          </Link>
           <Link to="/login">
             <Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-muted gap-2">
               <User className="h-4 w-4" />

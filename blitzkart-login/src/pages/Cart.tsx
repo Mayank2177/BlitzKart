@@ -119,9 +119,11 @@ const Cart = () => {
                   <span>₹{totalPrice}</span>
                 </div>
               </div>
-              <Button className="w-full" size="lg">
-                Proceed to Checkout
-              </Button>
+              <Link to="/checkout">
+                <Button className="w-full" size="lg">
+                  Proceed to Checkout
+                </Button>
+              </Link>
               <Link to="/" className="block">
                 <Button variant="outline" className="w-full" size="lg">
                   Continue Shopping
