@@ -6,7 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { Link } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import {
   Package,
   Clock,
@@ -14,6 +16,8 @@ import {
   ChefHat,
   Truck,
   ShoppingBag,
+  XCircle,
+  AlertTriangle,
 } from "lucide-react";
 
 const statusConfig: Record<Order["status"], { label: string; icon: React.ElementType; color: string }> = {
@@ -21,6 +25,7 @@ const statusConfig: Record<Order["status"], { label: string; icon: React.Element
   preparing: { label: "Preparing", icon: ChefHat, color: "bg-amber-500/10 text-amber-600 border-amber-200" },
   out_for_delivery: { label: "Out for Delivery", icon: Truck, color: "bg-primary/10 text-primary border-primary/20" },
   delivered: { label: "Delivered", icon: Package, color: "bg-green-500/10 text-green-600 border-green-200" },
+  cancelled: { label: "Cancelled", icon: XCircle, color: "bg-destructive/10 text-destructive border-destructive/20" },
 };
 
 const statusSteps: Order["status"][] = ["confirmed", "preparing", "out_for_delivery", "delivered"];
@@ -29,12 +34,13 @@ function MinutesRemaining({ placedAt, estimatedMinutes, status }: { placedAt: nu
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
-    if (status === "delivered") return;
-    const interval = setInterval(() => setNow(Date.now()), 10000);
+    if (status === "delivered" || status === "cancelled") return;
+    const interval = setInterval(() => setNow(Date.now()), 5000);
     return () => clearInterval(interval);
   }, [status]);
 
   if (status === "delivered") return <span className="text-green-600 font-semibold">Delivered ✓</span>;
+  if (status === "cancelled") return <span className="text-destructive font-semibold">Cancelled</span>;
 
   const elapsedMs = now - placedAt;
   const remainingMs = estimatedMinutes * 60 * 1000 - elapsedMs;
@@ -47,10 +53,66 @@ function MinutesRemaining({ placedAt, estimatedMinutes, status }: { placedAt: nu
   );
 }
 
+function CancelTimeRemaining({ order }: { order: Order }) {
+  const { getCancelTimeRemaining } = useOrders();
+  const [seconds, setSeconds] = useState(() => getCancelTimeRemaining(order));
+
+  useEffect(() => {
+    if (order.status === "delivered" || order.status === "cancelled") return;
+    const interval = setInterval(() => {
+      setSeconds(getCancelTimeRemaining(order));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [order, getCancelTimeRemaining]);
+
+  if (seconds <= 0) return null;
+
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+
+  return (
+    <span className="text-xs text-muted-foreground flex items-center gap-1">
+      <AlertTriangle className="h-3 w-3" />
+      Cancel window: {mins}:{secs.toString().padStart(2, "0")}
+    </span>
+  );
+}
+
 const OrderCard = ({ order }: { order: Order }) => {
   const config = statusConfig[order.status];
   const StatusIcon = config.icon;
-  const currentStep = statusSteps.indexOf(order.status);
+  const currentStep = order.status === "cancelled" ? -1 : statusSteps.indexOf(order.status);
+  const { cancelOrder, canCancelOrder } = useOrders();
+  const { toast } = useToast();
+  const [showCancelForm, setShowCancelForm] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [canCancel, setCanCancel] = useState(() => canCancelOrder(order));
+
+  useEffect(() => {
+    if (order.status === "delivered" || order.status === "cancelled") {
+      setCanCancel(false);
+      return;
+    }
+    const interval = setInterval(() => {
+      setCanCancel(canCancelOrder(order));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [order, canCancelOrder]);
+
+  const handleCancel = () => {
+    if (!cancelReason.trim()) {
+      toast({ variant: "destructive", title: "Please provide a reason for cancellation" });
+      return;
+    }
+    const success = cancelOrder(order.id, cancelReason.trim());
+    if (success) {
+      toast({ title: "Order cancelled", description: "Your order has been cancelled. Refund will be processed shortly." });
+      setShowCancelForm(false);
+      setCancelReason("");
+    } else {
+      toast({ variant: "destructive", title: "Cannot cancel", description: "The cancellation window has closed." });
+    }
+  };
 
   return (
     <Card className="overflow-hidden">
@@ -75,16 +137,31 @@ const OrderCard = ({ order }: { order: Order }) => {
         </div>
 
         {/* Progress bar */}
-        <div className="flex items-center gap-1">
-          {statusSteps.map((step, i) => (
-            <div
-              key={step}
-              className={`h-1.5 flex-1 rounded-full transition-colors ${
-                i <= currentStep ? "bg-primary" : "bg-muted"
-              }`}
-            />
-          ))}
-        </div>
+        {order.status !== "cancelled" && (
+          <div className="flex items-center gap-1">
+            {statusSteps.map((step, i) => (
+              <div
+                key={step}
+                className={`h-1.5 flex-1 rounded-full transition-colors ${
+                  i <= currentStep ? "bg-primary" : "bg-muted"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Cancelled reason */}
+        {order.status === "cancelled" && order.cancelReason && (
+          <div className="bg-destructive/5 border border-destructive/20 rounded-lg px-4 py-3">
+            <p className="text-sm text-destructive font-medium mb-1">Cancellation Reason:</p>
+            <p className="text-sm text-muted-foreground">{order.cancelReason}</p>
+            {order.cancelledAt && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Cancelled at {new Date(order.cancelledAt).toLocaleString("en-IN", { timeStyle: "short", dateStyle: "medium" })}
+              </p>
+            )}
+          </div>
+        )}
 
         <Separator />
 
@@ -108,6 +185,64 @@ const OrderCard = ({ order }: { order: Order }) => {
           </span>
           <span className="font-heading font-bold text-foreground">₹{order.grandTotal}</span>
         </div>
+
+        {/* Cancel section */}
+        {canCancel && order.status !== "cancelled" && (
+          <>
+            <Separator />
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <CancelTimeRemaining order={order} />
+                {!showCancelForm && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCancelForm(true)}
+                    className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive gap-1.5"
+                  >
+                    <XCircle className="h-3.5 w-3.5" />
+                    Cancel Order
+                  </Button>
+                )}
+              </div>
+
+              {showCancelForm && (
+                <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-4 space-y-3">
+                  <p className="text-sm font-medium text-foreground">Why are you cancelling this order?</p>
+                  <Textarea
+                    placeholder="Please provide a reason (e.g., ordered by mistake, found better price, delivery too slow...)"
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    rows={3}
+                    className="resize-none"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={handleCancel}
+                      disabled={!cancelReason.trim()}
+                      className="gap-1.5"
+                    >
+                      <XCircle className="h-3.5 w-3.5" />
+                      Confirm Cancellation
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setShowCancelForm(false);
+                        setCancelReason("");
+                      }}
+                    >
+                      Keep Order
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );

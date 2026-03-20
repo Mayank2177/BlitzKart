@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Eye, EyeOff, Zap, ShoppingCart, Package, Truck, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 type View = "login" | "signup" | "forgot";
 type Role = "user" | "admin";
@@ -18,11 +19,71 @@ const Login = () => {
   const [shaking, setShaking] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { login, isLoggedIn, user, logout } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [adminCode, setAdminCode] = useState("");
+
+  // If already logged in, show profile
+  if (isLoggedIn && user) {
+    return (
+      <div className="flex min-h-screen bg-background items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-md"
+        >
+          <Card className="border border-border shadow-xl">
+            <CardContent className="p-8 text-center space-y-6">
+              <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center mx-auto">
+                <span className="font-heading text-3xl font-bold text-primary">
+                  {user.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
+                </span>
+              </div>
+              <div>
+                <h2 className="font-heading text-2xl font-bold text-foreground">{user.name}</h2>
+                <p className="text-sm text-muted-foreground font-body mt-1">{user.email}</p>
+                {user.phone && <p className="text-sm text-muted-foreground font-body">{user.phone}</p>}
+                <span className="inline-flex mt-2 px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                  {user.role === "admin" ? "Administrator" : "Customer"}
+                </span>
+              </div>
+              <div className="text-sm text-muted-foreground font-body">
+                Member since {new Date(user.joinedAt).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
+              </div>
+              <div className="space-y-3">
+                <Link to={user.role === "admin" ? "/admin" : "/"}>
+                  <Button className="w-full" size="lg">
+                    {user.role === "admin" ? "Go to Dashboard" : "Continue Shopping"}
+                  </Button>
+                </Link>
+                <Link to="/orders">
+                  <Button variant="outline" className="w-full" size="lg">
+                    My Orders
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+                  size="lg"
+                  onClick={() => {
+                    logout();
+                    toast({ title: "Logged out successfully" });
+                  }}
+                >
+                  Sign Out
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    );
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +91,18 @@ const Login = () => {
       setShaking(true);
       setTimeout(() => setShaking(false), 400);
       toast({ variant: "destructive", title: "Please fill in all fields" });
+      return;
+    }
+    if (view === "signup" && (!name || !phone)) {
+      setShaking(true);
+      setTimeout(() => setShaking(false), 400);
+      toast({ variant: "destructive", title: "Name and phone number are required" });
+      return;
+    }
+    if (view === "login" && role === "user" && (!name || !phone)) {
+      setShaking(true);
+      setTimeout(() => setShaking(false), 400);
+      toast({ variant: "destructive", title: "Name and phone number are required" });
       return;
     }
     if (role === "admin" && view === "login" && !adminCode) {
@@ -44,6 +117,15 @@ const Login = () => {
       setView("login");
       return;
     }
+
+    // Log the user in
+    const userName = name ? name : email.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    login({
+      name: userName,
+      email,
+      phone,
+      role,
+    });
 
     toast({
       title: view === "login"
@@ -185,10 +267,10 @@ const Login = () => {
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                {view === "signup" && (
+                {(view === "signup" || (view === "login" && role === "user")) && (
                   <div className="space-y-2">
                     <Label htmlFor="name" className="text-sm font-medium text-foreground font-body">Full Name</Label>
-                    <Input id="name" type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} className="h-11" />
+                    <Input id="name" type="text" placeholder="Rahul Sharma" value={name} onChange={(e) => setName(e.target.value)} className="h-11" />
                   </div>
                 )}
 
@@ -198,6 +280,13 @@ const Login = () => {
                   </Label>
                   <Input id="email" type="email" placeholder={role === "admin" ? "admin@blitzkart.com" : "you@example.com"} value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
                 </div>
+
+                {view !== "forgot" && role === "user" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-sm font-medium text-foreground font-body">Phone Number</Label>
+                    <Input id="phone" type="tel" placeholder="+91 98765 43210" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-11" />
+                  </div>
+                )}
 
                 {view !== "forgot" && (
                   <div className="space-y-2">

@@ -14,6 +14,28 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+
+const AdminSidebarUser = () => {
+  const { user } = useAuth();
+  const displayName = user?.name || "Admin User";
+  const initials = displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+
+  return (
+    <>
+      <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[hsl(var(--sidebar-accent))] cursor-pointer transition-colors">
+        <div className="w-8 h-8 rounded-full bg-[hsl(var(--sidebar-primary))]/20 flex items-center justify-center text-xs font-bold text-[hsl(var(--sidebar-primary))]">
+          {initials}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-[hsl(var(--sidebar-accent-foreground))] truncate">{displayName}</p>
+          <p className="text-[10px] text-[hsl(var(--sidebar-muted))]">{user?.role === "admin" ? "Super Admin" : "User"}</p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-[hsl(var(--sidebar-muted))]" />
+      </div>
+    </>
+  );
+};
 
 const navSections = [
   {
@@ -112,16 +134,7 @@ const AdminSidebar = () => {
 
       {/* User */}
       <div className="px-3 py-4 border-t border-[hsl(var(--sidebar-border))]">
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[hsl(var(--sidebar-accent))] cursor-pointer transition-colors">
-          <div className="w-8 h-8 rounded-full bg-[hsl(var(--sidebar-primary))]/20 flex items-center justify-center text-xs font-bold text-[hsl(var(--sidebar-primary))]">
-            RK
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-[hsl(var(--sidebar-accent-foreground))] truncate">Raj Kumar</p>
-            <p className="text-[10px] text-[hsl(var(--sidebar-muted))]">Super Admin</p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-[hsl(var(--sidebar-muted))]" />
-        </div>
+        <AdminSidebarUser />
         <Link
           to="/"
           className="flex items-center gap-3 px-3 py-2 mt-1 rounded-lg text-sm text-[hsl(var(--sidebar-muted))] hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-accent-foreground))] transition-colors"

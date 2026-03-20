@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
 import { OrderProvider } from "@/contexts/OrderContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index.tsx";
 import Login from "./pages/Login.tsx";
 import Inventory from "./pages/Inventory.tsx";
@@ -30,42 +31,44 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
-      <TooltipProvider>
-        <CartProvider>
-          <OrderProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/inventory" element={<Inventory />} />
-                <Route path="/dispatch" element={<Dispatch />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/products" element={<Products />} />
+      <AuthProvider>
+        <TooltipProvider>
+          <CartProvider>
+            <OrderProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/inventory" element={<Inventory />} />
+                  <Route path="/dispatch" element={<Dispatch />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/orders" element={<Orders />} />
+                  <Route path="/products" element={<Products />} />
 
-                {/* Admin Routes */}
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<AdminDashboard />} />
-                  <Route path="orders" element={<AdminOrders />} />
-                  <Route path="products" element={<AdminProducts />} />
-                  <Route path="sellers" element={<AdminSellers />} />
-                  <Route path="inventory" element={<Inventory />} />
-                  <Route path="delivery" element={<AdminDelivery />} />
-                  <Route path="coverage" element={<AdminCoverage />} />
-                  <Route path="analytics" element={<AdminAnalytics />} />
-                  <Route path="settings" element={<AdminSettings />} />
-                </Route>
+                  {/* Admin Routes */}
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="orders" element={<AdminOrders />} />
+                    <Route path="products" element={<AdminProducts />} />
+                    <Route path="sellers" element={<AdminSellers />} />
+                    <Route path="inventory" element={<Inventory />} />
+                    <Route path="delivery" element={<AdminDelivery />} />
+                    <Route path="coverage" element={<AdminCoverage />} />
+                    <Route path="analytics" element={<AdminAnalytics />} />
+                    <Route path="settings" element={<AdminSettings />} />
+                  </Route>
 
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </OrderProvider>
-        </CartProvider>
-      </TooltipProvider>
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </OrderProvider>
+          </CartProvider>
+        </TooltipProvider>
+      </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
