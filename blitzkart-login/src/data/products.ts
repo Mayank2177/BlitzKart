@@ -53,6 +53,17 @@ import nailPolish from "@/assets/products/nail-polish.png";
 import faceMask from "@/assets/products/face-mask.png";
 import bodyLotion from "@/assets/products/body-lotion.png";
 
+import pujaThali from "@/assets/products/puja-thali.png";
+import agarbatti from "@/assets/products/agarbatti.png";
+import ghee from "@/assets/products/ghee.png";
+import camphor from "@/assets/products/camphor.png";
+import coconut from "@/assets/products/coconut.png";
+import ladoo from "@/assets/products/ladoo.png";
+import kumkum from "@/assets/products/kumkum.png";
+import diyaSet from "@/assets/products/diya-set.png";
+import flowerGarland from "@/assets/products/flower-garland.png";
+import haldi from "@/assets/products/haldi.png";
+
 export interface ProductData {
   name: string;
   price: number;
@@ -127,6 +138,18 @@ export const allProducts: ProductData[] = [
   { name: "Nail Polish Set", price: 249, originalPrice: 350, unit: "5 pcs", image: nailPolish, discount: 29, category: "Beauty Products" },
   { name: "Face Mask Pack", price: 199, unit: "5 sheets", image: faceMask, category: "Beauty Products" },
   { name: "Body Lotion", price: 275, originalPrice: 350, unit: "200ml", image: bodyLotion, discount: 21, category: "Beauty Products" },
+
+  // Navratri Special
+  { name: "Puja Thali Set", price: 249, originalPrice: 399, unit: "1 set", image: pujaThali, discount: 38, category: "Navratri Special" },
+  { name: "Agarbatti Pack", price: 49, originalPrice: 79, unit: "100 sticks", image: agarbatti, discount: 38, category: "Navratri Special" },
+  { name: "Pure Desi Ghee", price: 299, originalPrice: 450, unit: "500ml", image: ghee, discount: 34, category: "Navratri Special" },
+  { name: "Camphor Tablets", price: 35, originalPrice: 55, unit: "50g", image: camphor, discount: 36, category: "Navratri Special" },
+  { name: "Puja Coconut", price: 30, originalPrice: 45, unit: "1 pc", image: coconut, discount: 33, category: "Navratri Special" },
+  { name: "Besan Ladoo Box", price: 199, originalPrice: 320, unit: "500g", image: ladoo, discount: 38, category: "Navratri Special" },
+  { name: "Kumkum & Roli Set", price: 25, originalPrice: 40, unit: "1 set", image: kumkum, discount: 38, category: "Navratri Special" },
+  { name: "Brass Diya Set", price: 149, originalPrice: 249, unit: "4 pcs", image: diyaSet, discount: 40, category: "Navratri Special" },
+  { name: "Marigold Garland", price: 45, originalPrice: 70, unit: "1 string", image: flowerGarland, discount: 36, category: "Navratri Special" },
+  { name: "Haldi Powder", price: 39, originalPrice: 60, unit: "100g", image: haldi, discount: 35, category: "Navratri Special" },
 ];
 
-export const categories = ["Grocery & Kitchen", "Snacks & Drinks", "Household Items", "Electronics", "Beauty Products"];
+export const categories = ["Grocery & Kitchen", "Snacks & Drinks", "Household Items", "Electronics", "Beauty Products", "Navratri Special"];

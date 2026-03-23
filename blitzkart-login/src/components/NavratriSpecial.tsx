@@ -113,7 +113,7 @@ const NavratriSpecial = () => {
           className="text-center mt-8"
         >
           <Link
-            to="/products"
+            to="/products?category=Navratri+Special"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-heading font-bold text-sm transition-colors active:scale-[0.97]"
           >
             View All Navratri Deals →
