@@ -1,0 +1,10 @@
+package require sqlite3
+07  sqlite3 db [lindex $argv 0]
+08  db eval [lindex $argv 1] x {
+09    foreach v $x(*) {
+
+10      puts "$v = $x($v)"
+11    }
+12    puts ""
+13  clear
+14  db close
