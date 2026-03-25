@@ -1,4 +1,5 @@
 import { Plus, Minus } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 
@@ -17,21 +18,23 @@ const ProductCard = ({ name, price, originalPrice, unit, image, discount }: Prod
   const quantity = cartItem?.quantity ?? 0;
 
   return (
-    <div className="bg-card rounded-xl border border-border p-4 flex flex-col gap-3 hover:shadow-lg transition-shadow relative group">
+    <div className="bg-card rounded-xl border border-border p-4 flex flex-col gap-3 hover:shadow-lg transition-shadow relative group cursor-pointer">
       {discount && (
         <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-md z-10">
           {discount}% OFF
         </span>
       )}
 
-      <div className="flex items-center justify-center h-28 overflow-hidden rounded-lg">
-        <img src={image} alt={name} className="h-full w-full object-contain" />
-      </div>
+      <Link to={`/product/${encodeURIComponent(name)}`} className="block">
+        <div className="flex items-center justify-center h-28 overflow-hidden rounded-lg">
+          <img src={image} alt={name} className="h-full w-full object-contain" />
+        </div>
 
-      <div className="flex-1">
-        <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">{name}</h3>
-        <p className="text-xs text-muted-foreground font-body mt-0.5">{unit}</p>
-      </div>
+        <div className="flex-1 mt-3">
+          <h3 className="font-heading text-sm font-semibold text-foreground leading-tight">{name}</h3>
+          <p className="text-xs text-muted-foreground font-body mt-0.5">{unit}</p>
+        </div>
+      </Link>
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

@@ -7,6 +7,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { OrderProvider } from "@/contexts/OrderContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ReviewProvider } from "@/contexts/ReviewContext";
 import Index from "./pages/Index.tsx";
 import Login from "./pages/Login.tsx";
 import Inventory from "./pages/Inventory.tsx";
@@ -15,6 +16,7 @@ import Cart from "./pages/Cart.tsx";
 import Checkout from "./pages/Checkout.tsx";
 import Orders from "./pages/Orders.tsx";
 import Products from "./pages/Products.tsx";
+import ProductDetail from "./pages/ProductDetail.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import AdminLayout from "./components/admin/AdminLayout.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
@@ -36,6 +38,7 @@ const App = () => (
       <AuthProvider>
         <TooltipProvider>
           <CartProvider>
+            <ReviewProvider>
             <OrderProvider>
               <Toaster />
               <Sonner />
@@ -49,6 +52,7 @@ const App = () => (
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/orders" element={<Orders />} />
                   <Route path="/products" element={<Products />} />
+                  <Route path="/product/:productName" element={<ProductDetail />} />
 
                   {/* Admin Routes */}
                   <Route path="/admin" element={<AdminLayout />}>
@@ -70,6 +74,7 @@ const App = () => (
                 </Routes>
               </BrowserRouter>
             </OrderProvider>
+            </ReviewProvider>
           </CartProvider>
         </TooltipProvider>
       </AuthProvider>

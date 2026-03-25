@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Search, ShoppingCart, MapPin, User, Package, Truck, Sun, Moon, LogOut, ChevronDown } from "lucide-react";
+import { Search, ShoppingCart, MapPin, User, Package, Truck, Sun, Moon, LogOut, ChevronDown, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,14 @@ import { useCart } from "@/contexts/CartContext";
 import { allProducts } from "@/data/products";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const ThemeToggle = () => {
   const { theme, toggleTheme } = useTheme();
@@ -114,12 +122,185 @@ const ProfileDropdown = () => {
   );
 };
 
+const PINCODE_DATA: Record<string, { area: string; city: string }> = {
+  "700001": { area: "GPO, BBD Bagh", city: "Kolkata" },
+  "700006": { area: "Howrah", city: "Kolkata" },
+  "700064": { area: "Bidhannagar, Salt Lake", city: "Kolkata" },
+  "700156": { area: "New Town", city: "Kolkata" },
+  "700014": { area: "Sealdah", city: "Kolkata" },
+  "700120": { area: "Barrackpore", city: "Kolkata" },
+  "110001": { area: "Connaught Place", city: "Delhi" },
+  "110017": { area: "Saket", city: "Delhi" },
+  "600017": { area: "T. Nagar", city: "Chennai" },
+  "600020": { area: "Adyar", city: "Chennai" },
+  "560034": { area: "Koramangala", city: "Bangalore" },
+  "560024": { area: "Hebbal", city: "Bangalore" },
+  "400053": { area: "Andheri West", city: "Mumbai" },
+  "411057": { area: "Hinjewadi", city: "Pune" },
+  "440010": { area: "Dharampeth", city: "Nagpur" },
+};
+
+const LocationPicker = ({
+  location,
+  setLocation,
+}: {
+  location: { pincode: string; area: string; city: string };
+  setLocation: (loc: { pincode: string; area: string; city: string }) => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  const [pincode, setPincode] = useState("");
+  const [detecting, setDetecting] = useState(false);
+  const [error, setError] = useState("");
+
+  const lookupPincode = (code: string) => {
+    const data = PINCODE_DATA[code];
+    if (data) {
+      setLocation({ pincode: code, ...data });
+      setOpen(false);
+      setPincode("");
+      setError("");
+      toast.success(`Delivering to ${data.area}, ${data.city}`);
+    } else {
+      setError("We don't deliver to this pincode yet");
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!/^\d{6}$/.test(pincode)) {
+      setError("Enter a valid 6-digit pincode");
+      return;
+    }
+    lookupPincode(pincode);
+  };
+
+  const handleDetectLocation = async () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation not supported by your browser");
+      return;
+    }
+    setDetecting(true);
+    setError("");
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&addressdetails=1`
+          );
+          const data = await res.json();
+          const detectedPincode = data.address?.postcode;
+          if (detectedPincode && PINCODE_DATA[detectedPincode]) {
+            lookupPincode(detectedPincode);
+          } else if (detectedPincode) {
+            setPincode(detectedPincode);
+            setError("We don't deliver to this pincode yet. Try another.");
+          } else {
+            setError("Couldn't determine pincode. Please enter manually.");
+          }
+        } catch {
+          setError("Failed to detect location. Please enter pincode manually.");
+        } finally {
+          setDetecting(false);
+        }
+      },
+      () => {
+        setError("Location access denied. Please enter pincode manually.");
+        setDetecting(false);
+      },
+      { timeout: 10000 }
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <button className="flex items-center gap-2 hover:bg-muted px-2 py-1 rounded-lg transition-colors">
+          <MapPin className="h-4 w-4 text-primary" />
+          <span className="text-muted-foreground text-sm">
+            Deliver to{" "}
+            <span className="font-medium text-foreground">
+              {location.area}, {location.pincode}
+            </span>
+          </span>
+          <ChevronDown className="h-3 w-3 text-muted-foreground" />
+        </button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="font-heading">Choose your location</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          <Button
+            variant="outline"
+            className="w-full justify-start gap-2"
+            onClick={handleDetectLocation}
+            disabled={detecting}
+          >
+            {detecting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <MapPin className="h-4 w-4 text-primary" />
+            )}
+            {detecting ? "Detecting location..." : "Use my current location"}
+          </Button>
+
+          <div className="relative flex items-center">
+            <div className="flex-1 border-t border-border" />
+            <span className="px-3 text-xs text-muted-foreground font-body">or enter pincode</span>
+            <div className="flex-1 border-t border-border" />
+          </div>
+
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <Input
+              placeholder="Enter 6-digit pincode"
+              value={pincode}
+              onChange={(e) => {
+                const v = e.target.value.replace(/\D/g, "").slice(0, 6);
+                setPincode(v);
+                setError("");
+              }}
+              maxLength={6}
+              inputMode="numeric"
+              className="flex-1"
+            />
+            <Button type="submit" disabled={pincode.length !== 6}>
+              Check
+            </Button>
+          </form>
+
+          {error && (
+            <p className="text-sm text-destructive font-body">{error}</p>
+          )}
+
+          <div className="text-xs text-muted-foreground font-body">
+            <p className="font-medium text-foreground mb-1">Available cities:</p>
+            <p>Kolkata · Delhi · Chennai · Bangalore · Mumbai · Pune · Nagpur</p>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const Navbar = () => {
   const { totalItems } = useCart();
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const [location, setLocation] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("bk-location");
+      if (saved) return JSON.parse(saved);
+    }
+    return { pincode: "400053", area: "Andheri West", city: "Mumbai" };
+  });
+
+  const updateLocation = (loc: { pincode: string; area: string; city: string }) => {
+    setLocation(loc);
+    localStorage.setItem("bk-location", JSON.stringify(loc));
+  };
 
   const results = query.trim().length > 0
     ? allProducts.filter(
@@ -149,10 +330,7 @@ const Navbar = () => {
       {/* Top bar */}
       <div className="border-b border-border">
         <div className="container mx-auto flex items-center justify-between px-4 py-2 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-primary" />
-            <span className="text-muted-foreground">Deliver to <span className="font-medium text-foreground">Mumbai, 400001</span></span>
-          </div>
+          <LocationPicker location={location} setLocation={updateLocation} />
           <div className="hidden md:flex items-center gap-4">
             <Link to="/inventory" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
               <Package className="h-4 w-4" /> Inventory
