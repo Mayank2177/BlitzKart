@@ -1,0 +1,160 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        BLITZKART API ENDPOINTS                               ║
+║                      Base URL: http://localhost:8080                         ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ GENERAL (1 endpoint)                                                         │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ GET  /                                    Health check / Welcome             │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ AUTHENTICATION (1 endpoint)                                                  │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ POST /api/auth/login                      Login (returns JWT token)          │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ USER MANAGEMENT (4 endpoints)                                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ GET    /api/users                         Get all users                      │
+│ GET    /api/users/:id                     Get user by ID                     │
+│ POST   /api/users                         Create new user                    │
+│ DELETE /api/users/:id                     Delete user                        │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PRODUCTS (7 endpoints)                                                       │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ GET    /products                          Get all products                   │
+│ GET    /products/:id                      Get product by ID                  │
+│ GET    /products/search                   Search products (?q=query)         │
+│ GET    /products/category                 Get by category (?category_id=1)   │
+│ POST   /api/products              🔒      Create product (Admin)             │
+│ PUT    /api/products/:id          🔒      Update product (Admin)             │
+│ DELETE /api/products/:id          🔒      Delete product (Admin)             │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ RECOMMENDATIONS (5 endpoints)                                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ GET  /api/recommendations/:userId         Personalized recommendations       │
+│ GET  /api/reorder-recommendations/:userId Reorder suggestions                │
+│ POST /api/search/:userId                  Record user search                 │
+│ POST /api/product-view/:userId/:productId Record product view                │
+│ GET  /api/search-suggestions              Search suggestions (?q=query)      │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SHOPPING CART (5 endpoints) - ALL PROTECTED 🔒                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ GET    /api/cart                  🔒      Get user's cart                    │
+│ POST   /api/cart                  🔒      Add item to cart                   │
+│ PUT    /api/cart/items/:id        🔒      Update cart item quantity          │
+│ DELETE /api/cart/items/:id        🔒      Remove item from cart              │
+│ DELETE /api/cart                  🔒      Clear entire cart                  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ORDERS (6 endpoints) - ALL PROTECTED 🔒                                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ POST /api/orders                  🔒      Create new order                   │
+│ GET  /api/orders                  🔒      Get user's orders (paginated)      │
+│ GET  /api/orders/:id              🔒      Get order by ID                    │
+│ GET  /api/orders/:id/history      🔒      Get order with status history      │
+│ PUT  /api/orders/:id/status       🔒      Update order status (Admin)        │
+│ POST /api/orders/:id/cancel       🔒      Cancel order                       │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ INVENTORY (3 endpoints) - MOCK IMPLEMENTATION                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ GET  /inventory                           Get all inventory                  │
+│ GET  /inventory/:id                       Get inventory by ID                │
+│ POST /inventory                           Create inventory                   │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ DISPATCH (3 endpoints) - MOCK IMPLEMENTATION                                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ GET  /dispatch                            Get all dispatch                   │
+│ GET  /dispatch/:id                        Get dispatch by ID                 │
+│ POST /dispatch                            Create dispatch                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ SUMMARY                                                                      ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ Total Endpoints:        36                                                   ║
+║ Public Endpoints:       22                                                   ║
+║ Protected Endpoints:    14  (marked with 🔒)                                ║
+║                                                                              ║
+║ Fully Implemented:      30                                                   ║
+║ Mock Implementation:     6  (Inventory & Dispatch)                           ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ AUTHENTICATION                                                               │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Protected endpoints require JWT token in Authorization header:              │
+│                                                                              │
+│   Authorization: Bearer <your_jwt_token>                                     │
+│                                                                              │
+│ Get token by logging in:                                                    │
+│   POST /api/auth/login                                                       │
+│   Body: {"email":"test@example.com","password":"password123"}               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ TEST CREDENTIALS                                                             │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Email:    test@example.com                                                   │
+│ Password: password123                                                        │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ QUICK START                                                                  │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ 1. Start server:                                                             │
+│    go run cmd/api/main.go                                                    │
+│                                                                              │
+│ 2. Test health check:                                                        │
+│    curl http://localhost:8080/                                               │
+│                                                                              │
+│ 3. Login:                                                                    │
+│    curl -X POST http://localhost:8080/api/auth/login \                       │
+│      -H "Content-Type: application/json" \                                   │
+│      -d '{"email":"test@example.com","password":"password123"}'              │
+│                                                                              │
+│ 4. Browse products:                                                          │
+│    curl http://localhost:8080/products                                       │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ TEST SCRIPTS                                                                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ ./test_all_routes.sh          - Test all endpoints                          │
+│ ./test_cart.sh                - Test cart management                         │
+│ ./test_products.sh            - Test product operations                      │
+│ ./test_orders.sh              - Test order workflow                          │
+│ ./test_recommendations.sh     - Test recommendation system                   │
+│ ./test_database.sh            - Test database connection                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ DOCUMENTATION FILES                                                          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ API_ENDPOINTS.md              - Complete endpoint documentation              │
+│ API_QUICK_REFERENCE.md        - Quick reference guide                        │
+│ API_ROUTES_SUMMARY.md         - Detailed routes summary                      │
+│ CART_FEATURE.md               - Cart feature documentation                   │
+│ PRODUCT_SERVICE_SUMMARY.md    - Product service documentation                │
+│ ORDER_SERVICE_SUMMARY.md      - Order service documentation                  │
+│ DATABASE_CONFIGURATION.md     - Database setup guide                         │
+│ IMPLEMENTATION_STATUS.md      - Project status overview                      │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ For detailed documentation, see API_ENDPOINTS.md                             ║
+╚══════════════════════════════════════════════════════════════════════════════╝

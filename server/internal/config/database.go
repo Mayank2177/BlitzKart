@@ -3,48 +3,93 @@ package config
 
 import (
 	"log"
+	"os"
+	"path/filepath"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
 
 func ConnectDB() {
 	var err error
+	
+	// Get absolute path for database
+	dbPath := getDBPath()
+	
+	// Ensure database directory exists
+	dbDir := filepath.Dir(dbPath)
+	if err := os.MkdirAll(dbDir, 0755); err != nil {
+		log.Fatal("Failed to create database directory:", err)
+	}
+	
+	// Configure GORM
+	config := &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	}
+	
 	// Connect to SQLite database
-	DB, err = gorm.Open(sqlite.Open("../database/ecommerce.db"), &gorm.Config{})
+	DB, err = gorm.Open(sqlite.Open(dbPath), config)
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	log.Println("Database connected successfully")
+	log.Println("Database connected successfully at:", dbPath)
+	
+	// Get underlying SQL database for connection pool settings
+	sqlDB, err := DB.DB()
+	if err != nil {
+		log.Fatal("Failed to get database instance:", err)
+	}
+	
+	// Set connection pool settings
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
 	
 	// Auto-migrate models (creates tables if they don't exist)
 	MigrateModels()
 }
 
-type Inventory struct {
-	ID     string  `json:"id"`
-	Title  string  `json:"title"`	
-	Artist string  `json:"artist"`
-	Price  float64 `json:"price"`
+// getDBPath returns the absolute path to the database file
+func getDBPath() string {
+	// Check if DB_PATH environment variable is set
+	if dbPath := os.Getenv("DB_PATH"); dbPath != "" {
+		return dbPath
+	}
+	
+	// Get current working directory
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatal("Failed to get current working directory:", err)
+	}
+	
+	// Construct database path relative to project root
+	// If running from server/ directory
+	dbPath := filepath.Join(cwd, "..", "database", "ecommerce.db")
+	
+	// If running from project root
+	if _, err := os.Stat(filepath.Join(cwd, "server")); err == nil {
+		dbPath = filepath.Join(cwd, "database", "ecommerce.db")
+	}
+	
+	// If running from server/cmd/api
+	if filepath.Base(cwd) == "api" {
+		dbPath = filepath.Join(cwd, "..", "..", "..", "database", "ecommerce.db")
+	}
+	
+	return dbPath
 }
 
-var inventory = []Inventory{
-	{ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
-	{ID: "2", Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
-	{ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
-}
-
-type Dispatch struct {
-	ID       string `json:"id"`
-	OrderID  string `json:"order_id"`
-	Status   string `json:"status"`
-	Location string `json:"location"`
-}
-
-var dispatch = []Dispatch{
-	{ID: "1", OrderID: "ORD001", Status: "In Transit", Location: "Warehouse A"},
-	{ID: "2", OrderID: "ORD002", Status: "Delivered", Location: "Customer Address"},
+// CloseDB closes the database connection
+func CloseDB() error {
+	if DB != nil {
+		sqlDB, err := DB.DB()
+		if err != nil {
+			return err
+		}
+		return sqlDB.Close()
+	}
+	return nil
 }

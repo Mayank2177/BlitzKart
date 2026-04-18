@@ -75,3 +75,81 @@ func (r *OrderRepository) GetFrequentlyOrderedProducts(userID uint, limit int) (
 	
 	return productIDs, err
 }
+
+// Create creates a new order
+func (r *OrderRepository) Create(order *models.Order) error {
+	return r.DB.Create(order).Error
+}
+
+// FindByID retrieves an order by ID with all associations
+func (r *OrderRepository) FindByID(id uint) (*models.Order, error) {
+	var order models.Order
+	err := r.DB.Preload("Items.ProductVariant.Product").
+		Preload("User").
+		First(&order, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &order, nil
+}
+
+// FindByIDAndUserID retrieves an order by ID for a specific user
+func (r *OrderRepository) FindByIDAndUserID(id, userID uint) (*models.Order, error) {
+	var order models.Order
+	err := r.DB.Where("id = ? AND user_id = ?", id, userID).
+		Preload("Items.ProductVariant.Product").
+		First(&order).Error
+	if err != nil {
+		return nil, err
+	}
+	return &order, nil
+}
+
+// UpdateStatus updates the order status
+func (r *OrderRepository) UpdateStatus(orderID uint, status string) error {
+	return r.DB.Model(&models.Order{}).
+		Where("id = ?", orderID).
+		Update("status", status).Error
+}
+
+// Cancel cancels an order (soft delete or status update)
+func (r *OrderRepository) Cancel(orderID uint) error {
+	return r.DB.Model(&models.Order{}).
+		Where("id = ?", orderID).
+		Update("status", "cancelled").Error
+}
+
+// GetAllOrders retrieves all orders with pagination
+func (r *OrderRepository) GetAllOrders(limit, offset int) ([]*models.Order, error) {
+	var orders []*models.Order
+	err := r.DB.Preload("Items").
+		Preload("User").
+		Order("created_at DESC").
+		Limit(limit).
+		Offset(offset).
+		Find(&orders).Error
+	return orders, err
+}
+
+// CountUserOrders counts total orders for a user
+func (r *OrderRepository) CountUserOrders(userID uint) (int64, error) {
+	var count int64
+	err := r.DB.Model(&models.Order{}).
+		Where("user_id = ?", userID).
+		Count(&count).Error
+	return count, err
+}
+
+// CreateStatusHistory creates a status history entry
+func (r *OrderRepository) CreateStatusHistory(history *models.OrderStatusHistory) error {
+	return r.DB.Create(history).Error
+}
+
+// GetOrderStatusHistory retrieves status history for an order
+func (r *OrderRepository) GetOrderStatusHistory(orderID uint) ([]*models.OrderStatusHistory, error) {
+	var history []*models.OrderStatusHistory
+	err := r.DB.Where("order_id = ?", orderID).
+		Order("updated_at DESC").
+		Find(&history).Error
+	return history, err
+}

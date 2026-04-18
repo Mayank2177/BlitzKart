@@ -18,7 +18,10 @@ func NewProductRepository(db *gorm.DB) *ProductRepository {
 
 func (r *ProductRepository) FindById(id uint) (*models.Product, error) {
 	var product models.Product
-	err := r.DB.First(&product, id).Error
+	err := r.DB.Preload("Category").
+		Preload("Variants").
+		Preload("Images").
+		First(&product, id).Error
 	if err != nil {
 		return nil, err
 	}

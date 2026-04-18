@@ -75,21 +75,53 @@ curl -X POST http://localhost:8080/api/users \
 |--------|----------|-------------|-----------|--------|
 | GET | `/products` | Get all products | No | ✅ Working |
 | GET | `/products/:id` | Get product by ID | No | ✅ Working |
+| GET | `/products/search` | Search products by name | No | ✅ Working |
+| GET | `/products/category` | Get products by category | No | ✅ Working |
 | POST | `/api/products` | Create product | Yes (JWT) | ✅ Working |
+| PUT | `/api/products/:id` | Update product | Yes (JWT) | ✅ Working |
+| DELETE | `/api/products/:id` | Delete product | Yes (JWT) | ✅ Working |
 
 **Examples:**
 ```bash
 # Get all products
 curl http://localhost:8080/products
 
+# Get all products with limit
+curl "http://localhost:8080/products?limit=10"
+
 # Get product by ID
 curl http://localhost:8080/products/1
+
+# Search products
+curl "http://localhost:8080/products/search?q=laptop"
+
+# Get products by category
+curl "http://localhost:8080/products/category?category_id=1"
 
 # Create product (requires JWT)
 curl -X POST http://localhost:8080/api/products \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{"name":"New Product","price":99.99,"sku":"PROD-001","category_id":1}'
+  -d '{
+    "name":"New Product",
+    "description":"Product description",
+    "sku":"PROD-001",
+    "price":99.99,
+    "category_id":1
+  }'
+
+# Update product (requires JWT)
+curl -X PUT http://localhost:8080/api/products/1 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "name":"Updated Product",
+    "price":149.99
+  }'
+
+# Delete product (requires JWT)
+curl -X DELETE http://localhost:8080/api/products/1 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 ---
@@ -132,7 +164,11 @@ curl http://localhost:8080/api/reorder-recommendations/1
 | Method | Endpoint | Description | Protected | Status |
 |--------|----------|-------------|-----------|--------|
 | POST | `/api/orders` | Create order | Yes (JWT) | ✅ Working |
+| GET | `/api/orders` | Get user's orders | Yes (JWT) | ✅ Working |
 | GET | `/api/orders/:id` | Get order by ID | Yes (JWT) | ✅ Working |
+| GET | `/api/orders/:id/history` | Get order with status history | Yes (JWT) | ✅ Working |
+| PUT | `/api/orders/:id/status` | Update order status (Admin) | Yes (JWT) | ✅ Working |
+| POST | `/api/orders/:id/cancel` | Cancel order | Yes (JWT) | ✅ Working |
 
 **Examples:**
 ```bash
@@ -140,16 +176,81 @@ curl http://localhost:8080/api/reorder-recommendations/1
 curl -X POST http://localhost:8080/api/orders \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{"user_id":1,"total":100}'
+  -d '{
+    "items": [
+      {"product_variant_id": 1, "quantity": 2},
+      {"product_variant_id": 4, "quantity": 1}
+    ]
+  }'
 
-# Get order (requires JWT)
+# Get user's orders (requires JWT)
+curl http://localhost:8080/api/orders \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Get orders with pagination
+curl "http://localhost:8080/api/orders?page=1&limit=10" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Get order by ID (requires JWT)
 curl http://localhost:8080/api/orders/1 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Get order with history
+curl http://localhost:8080/api/orders/1/history \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Update order status (Admin, requires JWT)
+curl -X PUT http://localhost:8080/api/orders/1/status \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{"status":"processing"}'
+
+# Cancel order (requires JWT)
+curl -X POST http://localhost:8080/api/orders/1/cancel \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 ---
 
-### 7. Inventory Routes ✅
+### 7. Cart Routes ✅
+| Method | Endpoint | Description | Protected | Status |
+|--------|----------|-------------|-----------|--------|
+| GET | `/api/cart` | Get user's cart | Yes (JWT) | ✅ Working |
+| POST | `/api/cart` | Add item to cart | Yes (JWT) | ✅ Working |
+| PUT | `/api/cart/items/:id` | Update cart item quantity | Yes (JWT) | ✅ Working |
+| DELETE | `/api/cart/items/:id` | Remove item from cart | Yes (JWT) | ✅ Working |
+| DELETE | `/api/cart` | Clear entire cart | Yes (JWT) | ✅ Working |
+
+**Examples:**
+```bash
+# Get cart (requires JWT)
+curl http://localhost:8080/api/cart \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Add item to cart (requires JWT)
+curl -X POST http://localhost:8080/api/cart \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{"product_variant_id":1,"quantity":2}'
+
+# Update cart item quantity (requires JWT)
+curl -X PUT http://localhost:8080/api/cart/items/1 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{"quantity":5}'
+
+# Remove item from cart (requires JWT)
+curl -X DELETE http://localhost:8080/api/cart/items/1 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Clear cart (requires JWT)
+curl -X DELETE http://localhost:8080/api/cart \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+### 8. Inventory Routes ✅
 | Method | Endpoint | Description | Status |
 |--------|----------|-------------|--------|
 | GET | `/inventory` | Get all inventory | ✅ Working |
@@ -172,7 +273,7 @@ curl -X POST http://localhost:8080/inventory \
 
 ---
 
-### 8. Dispatch Routes ✅
+### 9. Dispatch Routes ✅
 | Method | Endpoint | Description | Status |
 |--------|----------|-------------|--------|
 | GET | `/dispatch` | Get all dispatch | ✅ Working |
@@ -194,10 +295,6 @@ curl -X POST http://localhost:8080/dispatch \
 ```
 
 ---
-
-## Routes Folder Structure
-
-```
 server/internal/routes/
 ├── routes.go                    # Main routes setup
 ├── auth_routes.go              # Authentication routes
@@ -216,6 +313,9 @@ server/internal/routes/
 1. **test_all_routes.sh** - Tests all endpoints
 2. **test_full_recommendations.sh** - Tests recommendation system
 3. **test_recommendations.sh** - Basic recommendation tests
+4. **test_cart.sh** - Tests cart management endpoints
+5. **test_products.sh** - Tests product management endpoints
+6. **test_orders.sh** - Tests order management endpoints
 
 ---
 
@@ -223,8 +323,19 @@ server/internal/routes/
 
 Routes marked with 🔒 require JWT authentication:
 - `POST /api/products` 🔒
+- `PUT /api/products/:id` 🔒
+- `DELETE /api/products/:id` 🔒
 - `POST /api/orders` 🔒
+- `GET /api/orders` 🔒
 - `GET /api/orders/:id` 🔒
+- `GET /api/orders/:id/history` 🔒
+- `PUT /api/orders/:id/status` 🔒 (Admin)
+- `POST /api/orders/:id/cancel` 🔒
+- `GET /api/cart` 🔒
+- `POST /api/cart` 🔒
+- `PUT /api/cart/items/:id` 🔒
+- `DELETE /api/cart/items/:id` 🔒
+- `DELETE /api/cart` 🔒
 
 To access protected routes, include the JWT token in the Authorization header:
 ```bash
@@ -233,12 +344,15 @@ Authorization: Bearer YOUR_JWT_TOKEN
 
 ---
 
-## Total Endpoints: 23
+## Total Endpoints: 36
 
 - ✅ All routes working
 - ✅ Routes folder properly integrated
 - ✅ Recommendation system functional
 - ✅ Protected routes secured with JWT
+- ✅ Cart management fully implemented
+- ✅ Product management with full CRUD operations
+- ✅ Order management with complete workflow
 
 ---
 
