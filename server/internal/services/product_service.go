@@ -274,7 +274,7 @@ func (s *ProductService) mapProductToDetailResponse(product *models.Product) *dt
 
 	// Map category if loaded
 	if product.Category.ID != 0 {
-		response.Category = &dto.CategoryResponse{
+		response.Category = &dto.ProductCategoryResponse{
 			ID:   product.Category.ID,
 			Name: product.Category.Name,
 			Slug: product.Category.Slug,

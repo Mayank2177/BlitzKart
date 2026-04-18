@@ -153,3 +153,17 @@ func (r *OrderRepository) GetOrderStatusHistory(orderID uint) ([]*models.OrderSt
 		Find(&history).Error
 	return history, err
 }
+
+// CheckUserPurchasedProduct checks if a user has purchased a specific product
+func (r *OrderRepository) CheckUserPurchasedProduct(userID, productID uint) (bool, error) {
+	var count int64
+	
+	err := r.DB.Table("order_items").
+		Joins("JOIN orders ON orders.id = order_items.order_id").
+		Joins("JOIN product_variants ON product_variants.id = order_items.product_variant_id").
+		Where("orders.user_id = ? AND product_variants.product_id = ? AND orders.status IN ?", 
+			userID, productID, []string{"delivered", "completed", "processing", "shipped"}).
+		Count(&count).Error
+	
+	return count > 0, err
+}

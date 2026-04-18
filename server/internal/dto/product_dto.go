@@ -28,7 +28,7 @@ type ProductDetailResponse struct {
 	SKU         string                  `json:"sku"`
 	Price       float64                 `json:"price"`
 	CategoryID  uint                    `json:"category_id"`
-	Category    *CategoryResponse       `json:"category,omitempty"`
+	Category    *ProductCategoryResponse `json:"category,omitempty"`
 	Variants    []ProductVariantSummary `json:"variants,omitempty"`
 	Images      []ProductImageResponse  `json:"images,omitempty"`
 	CreatedAt   time.Time               `json:"created_at"`
@@ -61,8 +61,8 @@ type ProductImageResponse struct {
 	AltText string `json:"alt_text"`
 }
 
-// CategoryResponse represents a category
-type CategoryResponse struct {
+// ProductCategoryResponse represents a category in product responses
+type ProductCategoryResponse struct {
 	ID   uint   `json:"id"`
 	Name string `json:"name"`
 	Slug string `json:"slug"`

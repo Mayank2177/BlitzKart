@@ -27,17 +27,25 @@ func main() {
 	orderRepo := repositories.NewOrderRepository(config.DB)
 	cartRepo := repositories.NewCartRepository(config.DB)
 	productVariantRepo := repositories.NewProductVariantRepository(config.DB)
+	reviewRepo := repositories.NewReviewRepository(config.DB)
+	addressRepo := repositories.NewAddressRepository(config.DB)
+	categoryRepo := repositories.NewCategoryRepository(config.DB)
+	couponRepo := repositories.NewCouponRepository(config.DB)
 
 	// Initialize services
-	authService := services.NewAuthService()
+	authService := services.NewAuthService(userRepo)
 	userService := services.NewUserService(userRepo)
 	recommendationService := services.NewRecommendationService(searchHistoryRepo, productViewRepo, productRepo, orderRepo)
 	cartService := services.NewCartService(cartRepo, productVariantRepo)
 	productService := services.NewProductService(productRepo)
 	orderService := services.NewOrderService(orderRepo, productVariantRepo, cartRepo)
+	reviewService := services.NewReviewService(reviewRepo, productRepo, orderRepo)
+	addressService := services.NewAddressService(addressRepo)
+	categoryService := services.NewCategoryService(categoryRepo)
+	couponService := services.NewCouponService(couponRepo)
 
 	// Initialize handlers through routes package
-	h := routes.InitializeHandlers(authService, userService, recommendationService, cartService, productService, orderService)
+	h := routes.InitializeHandlers(authService, userService, recommendationService, cartService, productService, orderService, reviewService, addressService, categoryService, couponService)
 
 	// Configure router
 	router := gin.Default()
